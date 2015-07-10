@@ -1,0 +1,67 @@
+{% block context %}
+{
+	"description":"Preços Produtos Planos",
+	"keywords":"produtos,preços,compre",
+	"planos":[{
+		"nome": "Plano Inicial",
+		"preco": "Grátis",
+		"classe": "success",
+		"features":[1]
+	},
+	{
+		"nome": "Plano Básico",
+		"preco": "R$25,00 / mês",
+		"classe": "danger",
+		"features":[1, 2]
+	},
+	{
+		"nome": "Plano Empresarial",
+		"preco": "R$45,00 / mês",
+		"classe": "info",
+		"features":[1, 2, 3]
+	}
+	],
+	"features":[
+		"Site Dinâmico 1#",
+		"Banco de Dados 2#",
+		"Atendimento 24horas 3#"
+	]
+}
+{% endblock %}
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Preços e Planos disponíveis</h2>
+		</div>
+	</div>
+	<div class="row">
+		{% for plano in planos %}
+		<div class="col-md-4">
+			<div class="panel panel-{{plano.classe}}">
+				<div class="panel-heading">
+					<h4 class="text-center">{{plano.nome}} - {{plano.preco}}</h4>
+				</div>
+				<ul class="list-group list-group-flush text-center">
+					{% for feature in features %}
+					<li class="list-group-item
+					{% if forloop.counter not in planos.features %}
+					disabled
+					{% endif %}
+					">
+					{{feature}}
+					</li>
+					{% endfor %}
+				</ul>
+				<div class="panel-footer">
+					<a class="btn btn-lg btn-block btn-{{plano.classe}}" href="#">Compre  Agora!</a>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<p>{% lorem %}</p>
+		</div>
+	</div>
+</div>

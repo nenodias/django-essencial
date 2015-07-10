@@ -1,0 +1,5 @@
+caso queira executar o projeto em um servidor como o gunicorn é só chamar
+
+
+gunicorn <nome do seu arquivo sem a extensao>
+

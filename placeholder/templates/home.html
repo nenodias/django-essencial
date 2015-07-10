@@ -1,0 +1,26 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="utf-8" />
+		<title>Django PlaceHolder Images</title>
+		<link rel="stylesheet" href="{% static 'site.css' %}" type="text/css" />
+	</head>
+	<body>
+		<h1>Django PlaceHolder Images</h1>
+		<p>Esse servidor pode ser usado para gerar imagens de placholder para qualquer página web.</p>
+		<p>
+			Para requisitar uma imagem de placeholder basta informar a largura e a altura 
+			<b>/image/&lt;width&gt;x&lt;heigth&gt;/</b> nesse servidor ficaria como: 
+			<pre>
+				&lt;img src="{{ example }}" &gt;
+			</pre>
+		</p>
+		<h2>Exemplos</h2>
+		<ul>
+			<li><img src="{%  url 'placeholder' 50 50 %}" /></li>
+			<li><img src="{%  url 'placeholder' 100 50 %}" /></li>
+			<li><img src="{%  url 'placeholder' 50 100 %}" /></li>
+		</ul>
+	</body>
+</html>

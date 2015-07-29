@@ -7,8 +7,19 @@
         <title>Scrum Board Project</title>
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="{% static 'board/css/normalize.css' %}" />
+        <link rel="stylesheet" href="{% static 'board/css/board.css' %}" />
         <script type="text/html" id="home-template">
             <h1>Bem-Vindo ao projeto Scrum Board</h1>
+        </script>
+        <script type="text/html" id="header-template">
+            <span class="title">Projeto Scrum Board</span>
+            <% if (authenticated) { %>
+                <nav>
+                    <a href="/" class="button">Seus Sprints</a>
+                    <a href="#" class="logout button">Logout</a>
+                </nav>
+            <% } %>
         </script>
         <script type="text/html" id="login-template">
             <form action="" method="post">

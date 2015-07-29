@@ -36,7 +36,7 @@
         cleanErrors: function(){
             $('.error', this.form).remove();
         },
-        serializeForm: function(){
+        serializeForm: function(form){
             return _.object(_.map(form.serializeArray(), function(item){
                     return [item.name, item.value];
                 })

@@ -57,11 +57,31 @@
             }
             this.trigger('done');
             this.remove();
+        },
+        modelFailure: function(model, xhr, options){
+          var errors = xhr.responseJSON;
+          this.showErrors(errors);
         }
     });
 
     var HomepageView = TemplateView.extend({
-        templateName: '#home-template'
+        templateName: '#home-template',
+        initialize: function(options){
+          var self = this;
+          TemplateView.prototype.initialize.apply(this, arguments);
+          app.collections.ready.done(function(){
+            var end = new Date();
+            end.setDate(end.getDate() - 7);
+            end = end.toISOString().replace(/T.*/g, '');
+            app.sprints.fetch({
+              data: {end_min: end},
+              success: $.proxy(self.render, self)
+            });
+          });
+        },
+        getContext: function(){
+          return {sprints: app.sprints || null};
+        }
     });
 
     var LoginView = FormView.extend({

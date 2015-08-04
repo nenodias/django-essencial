@@ -11,6 +11,18 @@
         <link rel="stylesheet" href="{% static 'board/css/board.css' %}" />
         <script type="text/html" id="home-template">
             <h1>Bem-Vindo ao projeto Scrum Board</h1>
+            <button class="add" type="submit">Adicionar Sprint</button>
+            <% if (sprints !== null) { %>
+              <div class="sprints">
+                  <% _.each(sprints.models, function(){ %>
+                    <a href="#sprint/<%- sprint.get('id') %>" class="sprint"
+                      <%- sprint.get('name') %> <br />
+                      <span>finalizado em <%- sprint.get('end') %></span>
+                  <% }); %>
+              </div>
+            <% } else { %>
+              <h3 class="loading">Carregando...</h3>
+            <% } %>
         </script>
         <script type="text/html" id="header-template">
             <span class="title">Projeto Scrum Board</span>

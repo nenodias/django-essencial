@@ -42,6 +42,18 @@
                 <button type="submit">Login</button>
             </form>
         </script>
+        <script type="text/html" id="new-sprint-template">
+            <form action="" method="post">
+                <label for="id_name">Nome Sprint</label>
+                <input type="text" id="id_name" name="name" maxlength="100" required />
+                <label for="id_end">Data Final</label>
+                <input type="date" id="id_end" name="end" />
+                <label for="id_description">Descrição</label>
+                <textarea id="id_description" name="description" cols="50" ></textarea>
+                <button class="cancel">Cancelar</button>
+                <button type="submit">Inserir</button>
+            </form>
+        </script>
     </head>
     <body>
         <div id="content"></div>

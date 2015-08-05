@@ -68,7 +68,7 @@
     });
 
     app.session = new Session();
-/*
+
     app.models.BaseModel = Backbone.Model.extend({
       url: function() {
         var links = this.get('links'),
@@ -118,6 +118,5 @@
 
     });
 
-    */
 
 })(jQuery, Backbone, _, app);

@@ -69,7 +69,7 @@
 
     app.session = new Session();
 
-    app.models.BaseModel = Backbone.Model.extend({
+    var BaseModel = Backbone.Model.extend({
       url: function() {
         var links = this.get('links'),
           url = links && links.self;

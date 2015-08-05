@@ -93,7 +93,7 @@
         templateName: '#home-template',
         events: {
             'click button.add': 'renderAddForm'
-        }
+        },
         initialize: function(options){
           var self = this;
           TemplateView.prototype.initialize.apply(this, arguments);

@@ -46,7 +46,7 @@
         save: function(token){
             this.set('token', token);
             if(token === null){
-                localStorage.removeItem('apiToken');
+                console.log("save com token nulo");
             }else{
                 localStorage.apiToken = token;
             }
@@ -55,13 +55,14 @@
             this.save(null);
         },
         authenticated: function(){
+            console.log("getToken"+this.get('token'));
             return this.get('token') !== null;
         },
         _setupAuth: function(settings, originalOptions, xhr){
             if( this.authenticated() ){
                 xhr.setRequestHeader(
                     'Authorization',
-                    'Token'+ this.get('token')
+                    'Token '+ this.get('token')
                 );
             }
         }
@@ -73,7 +74,7 @@
       url: function() {
         var links = this.get('links'),
           url = links && links.self;
-        if (!urls) {
+        if (!url) {
             url = Backbone.Model.prototype.url.call(this);
         }
         return url;

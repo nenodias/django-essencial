@@ -46,7 +46,7 @@
         save: function(token){
             this.set('token', token);
             if(token === null){
-                console.log("save com token nulo");
+                localStorage.removeItem('apiToken');
             }else{
                 localStorage.apiToken = token;
             }

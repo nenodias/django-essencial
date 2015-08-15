@@ -91,8 +91,8 @@ def index(request):
 from django.conf.urls import url
 
 urlpatterns = (
-	url(r'^image/(?P<width>[0-9]+)x(?P<heigth>[0-9]+)/$', placeholder, name="placeholder"), 
-	url(r'^$', index, name="homepage"), 
+	url(r'^image/(?P<width>[0-9]+)x(?P<heigth>[0-9]+)/$', placeholder, name="placeholder"),
+	url(r'^$', index, name="homepage"),
 	)
 
 from django.core.wsgi import get_wsgi_application

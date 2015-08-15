@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="{% static 'board/css/board.css' %}" />
         <script type="text/html" id="home-template">
             <h1>Bem-Vindo ao projeto Scrum Board</h1>
-            <button class="add" type="submit">Adicionar Sprint</button>
+            <button class="addSprint" type="submit">Adicionar Sprint</button>
             <% if (sprints !== null) { %>
               <!--
               exemplo de debugger
@@ -60,11 +60,15 @@
             </form>
         </script>
         <script type="text/html" id="sprint-template">
-            <% if (sprints !== null) { %>
-              <h2><%- sprint.get('name') %></h2>
-              <span class="due-date">Due <%- sprint.get('end') %></span>
-              <p class="description"><%- sprint.get('description') %></p>
-              <div class="tasks"></div>
+            <% if (sprint !== null) { %>
+              <% if (!sprint.invalid) { %>
+                <h2><%- sprint.get('name') %></h2>
+                <span class="due-date">Due <%- sprint.get('end') %></span>
+                <p class="description"><%- sprint.get('description') %></p>
+                <div class="tasks"></div>
+              <% } else { %>
+                <h1>Sprint <%- sprint.get('id') %> não encontrado</h1>
+              <% } %>
             <% } else { %>
               <h3 class="loading">Carregando...</h3>
             <% } %>

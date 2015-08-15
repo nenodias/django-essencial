@@ -89,10 +89,33 @@
         }
     });
 
+    var SprintView = TemplateView.extend({
+      templateName : '#sprint-template',
+      initialize : function(options){
+        var self = this;
+        TemplateView.prototype.initialize.apply(this, arguments);
+        this.sprintId = options.sprintId;
+        this.sprint = null;
+        app.collections.ready.done(function(){
+          app.sprints.getOrFetch(self.sprintId).done(function (sprint){
+            self.sprint = sprint;
+            self.render();
+          }).fail(function (sprint) {
+              self.sprint = sprint;
+              self.sprint.invalid = true;
+              self.render();
+          });
+        });
+      },
+      getContent: function (){
+        return {sprint: self.sprint};
+      }
+    });
+
     var HomepageView = TemplateView.extend({
         templateName: '#home-template',
         events: {
-            'click button.add': 'renderAddForm'
+            'click button.addSprint': 'renderAddForm'
         },
         initialize: function(options){
           var self = this;
@@ -116,9 +139,11 @@
             event.preventDefault();
             link.before(view.el);
             link.hide();
+            $(".sprints").hide();
             view.render();
             view.on('done', function(){
                 link.show();
+                $(".sprints").show();
             });
         }
     });
@@ -154,28 +179,6 @@
             app.session.delete();
             window.location = '/';
         }
-    });
-
-    var SprintView = TemplateView.extend({
-      templateName : '#sprint-template',
-      initialize : function(options){
-        var self = this;
-        TemplateView.prototype.initialize.apply(this, arguments);
-        this.sprintId = options.sprintId;
-        this.sprint = null;
-        app.collections.ready.done(function(){
-          self.sprint = app.sprints.push({ id : self.sprint });
-          self.sprint.fetch({
-            success: function (){
-              console.log(self.sprint);
-              self.render();
-            }
-          });
-        });
-      },
-      getContent: function (){
-        return {sprint: self.sprint};
-      }
     });
 
     app.views.HomepageView = HomepageView;

@@ -55,7 +55,6 @@
             this.save(null);
         },
         authenticated: function(){
-            console.log("getToken"+this.get('token'));
             return this.get('token') !== null;
         },
         _setupAuth: function(settings, originalOptions, xhr){
@@ -95,17 +94,15 @@
         return response.results || [];
       },
       getOrFetch: function (id) {
-        var result = new $.Deferred(),
+        var result = $.Deferred(),
           model = this.get(id);
         if(!model) {
-          model = this.push({ id: id});
-          model.fetch({
+          model = this.push({id: id});
+          return model.fetch({
             success: function (model, response, options) {
-              console.log("deu certo");
               result.resolve(model);
             },
             error: function (model, response, options) {
-              console.log("deu erro");
               result.reject(model, response);
             }
           });

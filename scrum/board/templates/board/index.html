@@ -63,7 +63,7 @@
             <% if (sprint !== null) { %>
               <% if (!sprint.invalid) { %>
                 <h2><%- sprint.get('name') %></h2>
-                <span class="due-date">Due <%- sprint.get('end') %></span>
+                <span class="due-date">Finalizado em <%- sprint.get('end') %></span>
                 <p class="description"><%- sprint.get('description') %></p>
                 <div class="tasks"></div>
               <% } else { %>

@@ -101,14 +101,14 @@
             self.sprint = sprint;
             self.render();
           }).fail(function (sprint) {
-              self.sprint = sprint;
-              self.sprint.invalid = true;
-              self.render();
+            self.sprint = sprint;
+            self.sprint.invalid = true;
+            self.render();
           });
         });
       },
-      getContent: function (){
-        return {sprint: self.sprint};
+      getContext: function (){
+        return { sprint: this.sprint };
       }
     });
 

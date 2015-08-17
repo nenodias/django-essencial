@@ -98,7 +98,7 @@
           model = this.get(id);
         if(!model) {
           model = this.push({id: id});
-          return model.fetch({
+          model.fetch({
             success: function (model, response, options) {
               result.resolve(model);
             },

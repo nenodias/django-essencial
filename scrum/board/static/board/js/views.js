@@ -89,6 +89,21 @@
         }
     });
 
+    var StatusView = TemplateView.extend({
+      tagName: 'section',
+      className: 'status',
+      templateName: '#status-template',
+      initialize: function(options){
+        TemplateView.prototype.initialize.apply(this, arguments);
+        this.sprint = options.sprint;
+        this.status = options.status;
+        this.title = options.title;
+      },
+      getContext: function(){
+        return {sprint: this.sprint, title: this.title};
+      }
+    });
+
     var SprintView = TemplateView.extend({
       templateName : '#sprint-template',
       initialize : function(options){
@@ -96,6 +111,33 @@
         TemplateView.prototype.initialize.apply(this, arguments);
         this.sprintId = options.sprintId;
         this.sprint = null;
+        this.statuses = {
+          unassigned: new StatusView({
+            sprint: null,
+            status: 1,
+            title: 'Backlog'
+          }),
+          todo: new StatusView({
+            sprint: this.sprintId,
+            status: 1,
+            title: 'Not Started'
+          }),
+          active: new StatusView({
+            sprint: this.sprintId,
+            status: 2,
+            title: 'In Development'
+          }),
+          testing: new StatusView({
+            sprint: this.sprintId,
+            status: 3,
+            title: 'In Testing'
+          }),
+          done: new StatusView({
+            sprint: this.sprintId,
+            status: 4,
+            title: 'Completed'
+          }),
+        };
         app.collections.ready.done(function(){
           app.sprints.getOrFetch(self.sprintId).done(function (sprint){
             self.sprint = sprint;
@@ -109,6 +151,14 @@
       },
       getContext: function (){
         return { sprint: this.sprint };
+      },
+      render: function(){
+        TemplateView.prototype.render.apply(this, arguments);
+        _.each(this.statuses, function(){
+          $('.tasks', this.$el).append(view.el);
+          view.delegateEvents();
+          view.render();
+        }, this);
       }
     });
 

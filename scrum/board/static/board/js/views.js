@@ -111,6 +111,7 @@
         TemplateView.prototype.initialize.apply(this, arguments);
         this.sprintId = options.sprintId;
         this.sprint = null;
+        this.tasks = [];
         this.statuses = {
           unassigned: new StatusView({
             sprint: null,
@@ -139,14 +140,20 @@
           }),
         };
         app.collections.ready.done(function(){
+          app.tasks.on('add', self.addTask, self);
           app.sprints.getOrFetch(self.sprintId).done(function (sprint){
             self.sprint = sprint;
             self.render();
+            //Adiciona qualquer tarefa corrente
+            app.tasks.each(self.addTask, self);
+            //Busca tarefas para o Sprint atual
+            sprint.fetchTasks();
           }).fail(function (sprint) {
             self.sprint = sprint;
             self.sprint.invalid = true;
             self.render();
           });
+          app.tasks.getBacklog();
         });
       },
       getContext: function (){
@@ -154,11 +161,26 @@
       },
       render: function(){
         TemplateView.prototype.render.apply(this, arguments);
-        _.each(this.statuses, function(){
+        _.each(this.statuses, function(view, name){
           $('.tasks', this.$el).append(view.el);
           view.delegateEvents();
           view.render();
         }, this);
+        _.each(this.statuses, function(tasks, name){
+          this.renderTask(task);
+        }, this);
+      },
+      addTask: function(task){
+        if( task.inBacklog() || task.inSprint(this.sprint) ){
+          this.tasks[task.get('id')] = task.
+          this.renderTask(task);
+        }
+      },
+      renderTask: function(task){
+        var column = task.statusClass(),
+          container = this.statuses[column],
+          html = _.template('<div><%- task.get("name") %></div>', {task: task});
+          $('.list', container.$el).append(html);
       }
     });
 

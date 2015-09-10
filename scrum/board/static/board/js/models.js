@@ -88,7 +88,24 @@
         }
       }
     });
-    app.models.Task = BaseModel.extend({});
+    app.models.Task = BaseModel.extend({
+      statusClass: function(){
+        var sprint = this.get('sprint'),
+          status;
+        if (!sprint){
+          status = 'unassigned';
+        } else {
+          status = [ 'todo', 'active', 'testing', 'done' ][this.get('status') -1];
+        }
+        return status;
+      },
+      inBacklog: function(){
+        return !this.get('sprint');
+      },
+      inSprint: function(sprint){
+        return sprint.get('id') == this.get('sprint');
+      }
+    });
     app.models.User = BaseModel.extend({
       idAttributemodel: 'username'
     });
@@ -136,7 +153,13 @@
           this.fetch({remove: false, data: {backlog: 'True'} });
         }
       });
-      app.tasks = new app.collections.Tasks();
+      app.tasks = new app.collections.Tasks({
+        model: app.models.Task,
+        url: data.tasks,
+        getBacklog: function(){
+          this.fetch({remove: false, data: {backlog: 'True'} });
+        }
+      });
 
       app.collections.Users = BaseCollection.extend({
         model: app.models.User,

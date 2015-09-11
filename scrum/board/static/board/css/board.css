@@ -121,3 +121,41 @@ header nav a:hover {
   border: : 1px solid #ccc;
   padding: 20px;
 }
+/* Tarefas
+=================== */
+.tasks{
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-flow: row wrap;
+
+  align-items: stretch;
+  overflow: scroll;
+}
+
+.tasks .status{
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 0 10px 15px 10px;
+  margin-right: 8px;
+  width: 17%;
+}
+
+.tasks .status .list {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-flow: row wrap;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.task-detail input, .task-detail textarea{
+  width: 90%;
+}

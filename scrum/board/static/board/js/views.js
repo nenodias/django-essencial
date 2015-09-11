@@ -18,7 +18,8 @@
     var FormView = TemplateView.extend({
         errorTemplate: _.template('<span class="error"><%- msg %></span>'),
         events:{
-            'submit form': 'submit'
+            'submit form': 'submit',
+            'click button.cancel': 'done'
         },
         showErrors: function(errors){
             _.map(errors, function(fieldErrors, name){
@@ -67,9 +68,7 @@
     var NewSprintView = FormView.extend({
         templateName: '#new-sprint-template',
         className: 'new-sprint',
-        events: _.extend({
-            'click button.cancel': 'done',
-        }, FormView.prototype.events),
+        FormView.prototype.events),
         submit: function (event){
             var self = this,
                 attributes = {};
@@ -89,10 +88,34 @@
         }
     });
 
+    var AddTaskView = FormView.extend({
+      templateName: '#new-task-template',
+      FormView.prototype.events),
+      submit: function(event){
+        var self = this,
+          attributes = {};
+          FormView.prototype.submit.apply(this, arguments);
+          attributes = this.serializeForm(this.form);
+          app.collections.ready.done(function(){
+            app.tasks.create(attributes,{
+              wait: true,
+              success: $.proxy(self.success, self),
+              error: $.proxy(self.modelFailure, self),
+            });
+          });
+      },
+      success: function(model, resp, options){
+        this.done();
+      }
+    });
+
     var StatusView = TemplateView.extend({
       tagName: 'section',
       className: 'status',
       templateName: '#status-template',
+      events:{
+        'click button.addTask': 'renderAddForm'
+      },
       initialize: function(options){
         TemplateView.prototype.initialize.apply(this, arguments);
         this.sprint = options.sprint;
@@ -101,6 +124,17 @@
       },
       getContext: function(){
         return {sprint: this.sprint, title: this.title};
+      },
+      renderAddForm: function(event){
+        var view = new AddTaskView(),
+          link = $(event.currentTarget);
+        event.preventDefault();
+        link.before(view.el);
+        link.hide();
+        view.render();
+        view.on('done', function(){
+          link.show();
+        });
       }
     });
 

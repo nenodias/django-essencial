@@ -47,6 +47,9 @@
                 <button type="submit">Login</button>
             </form>
         </script>
+        <script type="text/html" id="task-item-template">
+          <%- task.get('name') %>
+        </script>
         <script type="text/html" id="new-task-template">
           <form class="add-task" action="" method="post">
             <label for="id_name">Nome Task</label>

@@ -68,7 +68,6 @@
     var NewSprintView = FormView.extend({
         templateName: '#new-sprint-template',
         className: 'new-sprint',
-        FormView.prototype.events),
         submit: function (event){
             var self = this,
                 attributes = {};
@@ -90,7 +89,6 @@
 
     var AddTaskView = FormView.extend({
       templateName: '#new-task-template',
-      FormView.prototype.events),
       submit: function(event){
         var self = this,
           attributes = {};

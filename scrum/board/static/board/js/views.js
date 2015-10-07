@@ -141,6 +141,35 @@
       }
     });
 
+    var TaskDetailView = FormView.extend({
+      tagName: 'div',
+      className: 'task-detail',
+      template: '#task-detail-template',
+      initialize: function (options){
+        FormView.prototype.initialize.apply(this, arguments);
+        this.task = options.task;
+        this.changes = {};
+        $('button.save', this.$el).hide();
+        this.task.on('change', this.render, this);
+        this.task.on('remove', this.remove, this);
+      },
+      getContext: function(){
+        return {task: this.task, empty: '------'};
+      },
+      submit: function(event){
+        FormView.prototype.submit.apply(this, arguments);
+        this.task.save(this.changes, {
+          wait: true,
+          success: $.proxy(this.success, this),
+          error: $.proxy(this.modelFailure, this),
+        });
+      },
+      success: function(model){
+        this.changes = {};
+        $('button.save', this.$el).hide();
+      }
+    });
+
     var TaskItemView = TemplateView.extend({
       tagName: 'div',
       className: 'task-item',

@@ -144,7 +144,7 @@
       className: 'task-detail',
       templateName: '#task-detail-template',
       events: _.extend({
-        'blur [data-field][contentedittable=true]': 'editField'
+        'blur [data-field][contenteditable=true]': 'editField'
       }, FormView.prototype.events),
       initialize: function (options){
         FormView.prototype.initialize.apply(this, arguments);

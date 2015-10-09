@@ -145,6 +145,9 @@
       tagName: 'div',
       className: 'task-detail',
       template: '#task-detail-template',
+      events: _.extend({
+        'blur [data-field][contentedittable=true]': 'editField'
+      }, FormView.prototype.events),
       initialize: function (options){
         FormView.prototype.initialize.apply(this, arguments);
         this.task = options.task;
@@ -167,6 +170,31 @@
       success: function(model){
         this.changes = {};
         $('button.save', this.$el).hide();
+      },
+      editField: function(event){
+        var $this = $(event.currentTarget),
+          value = $this.text().replace(/^\s+|\s+$/g,''),
+          field = $this.data('field');
+        this.changes[field] = value;
+        $('button.save', this.$el).show();
+      },
+      showErrors: function(errors){
+        _.map(errors, function(fieldErrors, name){
+          var field = $('[data-field='+name+']', this.$el);
+          if(field.length === 0 ){
+            field = $('[data-field]',this.$el).first();
+          }
+          function appendError(msg){
+            var parent = field.parent('.with-label'),
+              error = this.errorTemplate({msg: msg});
+            if(parent.length === 0){
+              field.before(error);
+            }else{
+              parent.before(error);
+            }
+          }
+          _.map(fieldErrors, appendError, this);
+        }, this);
       }
     });
 
@@ -174,6 +202,9 @@
       tagName: 'div',
       className: 'task-item',
       templateName: '#task-item-template',
+      events:{
+        'click': 'details'
+      },
       initialize: function(options){
         TemplateView.prototype.initialize.apply(this, arguments);
         this.task = options.task;
@@ -186,6 +217,15 @@
       render: function(){
         TemplateView.prototype.render.apply(this, arguments);
         this.$el.css('order', this.task.get('order'));
+      },
+      details: function(){
+        var view = new TaskDetailView({task: this.task});
+        this.$el.before(view.el);
+        this.$el.hide();
+        view.render();
+        view.on('done' function(){
+          this.$el.show();
+        },this);
       }
     });
 

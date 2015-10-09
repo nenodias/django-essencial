@@ -142,7 +142,7 @@
     var TaskDetailView = FormView.extend({
       tagName: 'div',
       className: 'task-detail',
-      template: '#task-detail-template',
+      templateName: '#task-detail-template',
       events: _.extend({
         'blur [data-field][contentedittable=true]': 'editField'
       }, FormView.prototype.events),
@@ -206,8 +206,8 @@
       initialize: function(options){
         TemplateView.prototype.initialize.apply(this, arguments);
         this.task = options.task;
-        this.task.on('change', this.render,this);
-        this.task.on('remove', this.remove,this);
+        this.task.on('change', this.render, this);
+        this.task.on('remove', this.remove, this);
       },
       getContext: function(){
         return {task: this.task};
@@ -221,7 +221,7 @@
         this.$el.before(view.el);
         this.$el.hide();
         view.render();
-        view.on('done' function(){
+        view.on('done', function(){
           this.$el.show();
         },this);
       }

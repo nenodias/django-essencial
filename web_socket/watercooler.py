@@ -21,9 +21,9 @@ class SprintHandler(WebSocketHandler):
 
     def check_origin(self, origin):
         allowed = super().check_origin(origin)
-        parsed = urlparse(origin.lowe())
+        parsed = urlparse(origin.lower())
         matched = any(parsed.netloc == host for host in options.allowed_hosts)
-        return option.debug or allowed or matched
+        return options.debug or allowed or matched
 
     def open(self, sprint):
         '''Registra-se para receber atualizações de sprint em uma nova camada'''

@@ -1,3 +1,4 @@
+# *-* coding:utf-8 *-*
 import logging
 import signal
 import time
@@ -9,7 +10,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.options import define, parse_command_line, options
 from tornado.web import Application
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketClosedError
 
 define('debug', default=False, type=bool, help='Run in debug mode')
 define('port', default=8080, type=int, help='Server port')
@@ -24,22 +25,26 @@ class SprintHandler(WebSocketHandler):
         matched = any(parsed.netloc == host for host in options.allowed_hosts)
         return option.debug or allowed or matched
 
-    def open(self, origin):
+    def open(self, sprint):
         '''Registra-se para receber atualizações de sprint em uma nova camada'''
+        self.sprint = sprint
+        self.application.add_subscriber(self.sprint, self)
 
     def on_message(self, message):
         '''Faz o broadcast das atualizações para outros clientes interessados'''
+        self.application.broadcast(message, channel=self.sprint, sender=self)
 
     def on_close(self):
         '''Remove registros'''
+        self.application.remove_subscriber(self.sprint, self)
 
 def ScrumApplication(Application):
-
+    'Minha applicação'
     def __init__(self, **kwargs):
         routes = [
             (r'/(?P<sprint>[0-9]+)', SprintHandler),
         ]
-        super().__init__(routes, **kwargs)
+        Application.__init__(self, routes, **settings)
         self.subscriptions = defaultdict(list)
 
     def add_subscriber(self, channel, subscriber):
@@ -50,6 +55,19 @@ def ScrumApplication(Application):
 
     def get_subscribers(self, channel):
         return self.subscriptions[channel]
+
+    def broadcast(self, message, channel=None, sender=None):
+        if channel is None:
+            for c in self.subscriptions.keys():
+                self.broadcast(message, channel=c, sender=sender)
+        else:
+            peers = self.get_subscribers(channel)
+            for peer in peers:
+                if peer != sender:
+                    try:
+                        peer.write_message(message)
+                    except WebSocketClosedError:
+                        self.remove_subscriber(channel, peer)
 
 def shutdown(server):
     ioloop = IOLoop.instance()
@@ -64,7 +82,7 @@ def shutdown(server):
 
 if __name__ == '__main__':
     parse_command_line()
-    application = ScrumApplication(debug=options.debug)
+    application = ScrumApplication()
     server = HTTPServer(application)
     server.listen(options.port)
     signal.signal(signal.SIGINT, lambda sig, frame: shutdown(server) )

@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>Meu Client WebSocket</title>
+  </head>
+  <body>
+    <div id="mensagem">
+    </div>
+    <script type="text/javascript">
+      var socket = new WebSocket('ws://localhost:8080/123');
+      socket.onopen = function(){
+        console.log('Conexão foi aberta!');
+        socket.send('ping');
+      }
+      socket.onmessage = function(mensagem){
+        console.log('Nova Mensagem:'+ mensagem.data);
+        if(mensagem.data == 'ping'){
+          socket.send('pong');
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -38,13 +38,13 @@ class SprintHandler(WebSocketHandler):
         '''Remove registros'''
         self.application.remove_subscriber(self.sprint, self)
 
-def ScrumApplication(Application):
+class ScrumApplication(Application):
     'Minha applicação'
     def __init__(self, **kwargs):
         routes = [
             (r'/(?P<sprint>[0-9]+)', SprintHandler),
         ]
-        Application.__init__(self, routes, **settings)
+        super().__init__(routes, **kwargs)
         self.subscriptions = defaultdict(list)
 
     def add_subscriber(self, channel, subscriber):

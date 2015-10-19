@@ -160,7 +160,19 @@
         if (event.stopPropagation) {
           event.stopPropagation();
         }
-        //TODO trata a alteração do status da tarefa
+
+        task = app.tasks.get(task);
+        tasks = app.tasks.where({sprint: this.sprint, status: this.status});
+
+        if (tasks.length) {
+          order = _.min(_.map(tasks, function (model) {
+            return model.get('order');
+          }));
+        } else {
+          order = 1;
+        }
+        task.moveTo( this.status, this.sprint, order -1);
+
         this.trigger('drop', task);
         this.leave();
         return false;
@@ -292,7 +304,22 @@
         }
         task = app.tasks.get('task');
         if (taks !== this.task ){
-          //TODO trata a reordenação das tarefas
+          //Tarefa está sendo movida para a frente de this.task
+          order = this.get('order');
+          tasks = app.tasks.filter(function(model){
+            return model.get('id') !== task.get('id') &&
+            model.get('status') === self.task.get('status') &&
+            model.get('sprint') === self.task.get('sprint') &&
+            model.get('order') >= order;
+          });
+          _.each(tasks, function(model, i){
+            model.save({order: order + (i + 1)});
+          });
+          task.moveTo(
+            this.task.get('status'),
+            this.task.get('sprint'),
+            order
+          );
         }
         this.trigger('drop', task);
         this.leave();
@@ -353,6 +380,7 @@
         this.socket = null;
         app.collections.ready.done(function(){
           app.tasks.on('add', self.addTask, self);
+          app.tasks.on('change', self.changeTask, self);
           app.sprints.getOrFetch(self.sprintId).done(function (sprint){
             self.sprint = sprint;
             self.connectSocket();
@@ -443,6 +471,14 @@
         TemplateView.prototype.remove.apply(this, arguments);
         if(this.socket && this.socket.close){
           this.socket.close();
+        }
+      },
+      changeTask: function(task){
+        var changed = task.changedAttributes(),
+          view = this.tasks[ task.get('id') ];
+        if (view && typeof(changed.status) !== 'undefined' || typeof(changed.sprint) !== 'undefined' ){
+          view.remove();
+          this.addTask(task);
         }
       }
     });

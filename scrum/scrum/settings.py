@@ -42,7 +42,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
 }
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -60,7 +60,7 @@ DATABASES = {
         'PORT':'5432'
     }
 }
-
+'''
 
 LANGUAGE_CODE = 'pt-br'
 

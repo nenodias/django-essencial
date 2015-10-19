@@ -202,7 +202,7 @@ header nav a:hover {
 [draggable=true]{
   cursor: move;
 }
-.tasks .task-item.over{
+.tasks .task-item.over, .tasks .task-item.locked{
   opacity: 0.5;
 }
 .tasks .task-item.over, .tasks .status.over{

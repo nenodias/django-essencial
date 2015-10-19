@@ -198,3 +198,11 @@ header nav a:hover {
 [contenteditable=true]:focus {
   background: #fff;
 }
+
+[draggable=true]{
+  cursor: move;
+}
+.tasks .task-item.over{
+  opacity: 0.5;
+  border: 1px black dotted;
+}

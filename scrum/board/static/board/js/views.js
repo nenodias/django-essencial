@@ -201,7 +201,16 @@
       className: 'task-item',
       templateName: '#task-item-template',
       events:{
-        'click': 'details'
+        'click': 'details',
+        'dragstart': 'start',
+        'dragenter': 'enter',
+        'dragover': 'over',
+        'dragleave': 'leave',
+        'dragend': 'end',
+        'drop': 'drop'
+      },
+      attributes: {
+        draggable: true
       },
       initialize: function(options){
         TemplateView.prototype.initialize.apply(this, arguments);
@@ -224,7 +233,43 @@
         view.on('done', function(){
           this.$el.show();
         },this);
-      }
+      },
+      start: function(event){
+        var dataTransfer = event.originalEvent.dataTransfer;
+        dataTransfer.effectAllowed = 'move';
+        dataTransfer.setData('application/model', this.task.get('id') );
+        this.trigger('dragstart', this.task);
+      },
+      enter: function(event){
+        event.originalEvent.dataTransfer.effectAllowed = 'move';
+        event.preventDefault();
+        this.$el.addClass('over');
+      },
+      over: function(event){
+        event.originalEvent.dataTransfer.dropEffect = 'move';
+        event.preventDefault();
+        return false;
+      },
+      end: function(event){
+        this.trigger('dragend', this.task);
+      },
+      leave: function(event){
+        this.$el.removeClass('over');
+      },
+      drop: function(event){
+        var dataTransfer = event.originalEvent.dataTransfer,
+          task = dataTransfer.getData('application/model');
+        if (event.stopPropagation) {
+          event.stopPropagation();
+        }
+        task = app.tasks.get('task');
+        if (taks !== this.task ){
+          //TODO trata a reordenação das tarefas
+        }
+        this.trigger('drop', task);
+        this.leave();
+        return false;
+      },
     });
 
     var SprintView = TemplateView.extend({
@@ -262,10 +307,12 @@
             title: 'Completed'
           }),
         };
+        this.socket = null;
         app.collections.ready.done(function(){
           app.tasks.on('add', self.addTask, self);
           app.sprints.getOrFetch(self.sprintId).done(function (sprint){
             self.sprint = sprint;
+            self.connectSocket();
             self.render();
             //Adiciona qualquer tarefa corrente
             app.tasks.each(self.addTask, self);
@@ -309,6 +356,18 @@
         });
         view.render();
         return view;
+      },
+      connectSocket : function(){
+        var links = this.sprint && this.sprint.get('links');
+        if (links && links.channel){
+          this.socket = new app.Socket(links.channel);
+        }
+      },
+      remove : function(){
+        TemplateView.prototype.remove.apply(this, arguments);
+        if(this.socket && this.socket.close){
+          this.socket.close();
+        }
       }
     });
 

@@ -73,3 +73,6 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
+WATERCOOLER_SERVER = os.environ.get('WATERCOOLER_SERVER', 'localhost:8088')
+WATERCOOLER_SECURE = bool(os.environ.get('WATERCOOLER_SECURE', ''))

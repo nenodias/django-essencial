@@ -21,7 +21,7 @@
                   <% _.each(sprints.models, function(sprint){ %>
                     <a href="#sprint/<%- sprint.get('id') %>" class="sprint">
                       <%- sprint.get('name') %> <br />
-                      <span>finalizado em <%- sprint.get('end') %></span>
+                      <span>Término em <%- sprint.get('end') %></span>
                     </a>
                   <% }); %>
               </div>
@@ -64,7 +64,7 @@
             <form action="" method="post">
                 <label for="id_name">Nome Sprint</label>
                 <input type="text" id="id_name" name="name" maxlength="100" required />
-                <label for="id_end">Data Final</label>
+                <label for="id_end">Data Término</label>
                 <input type="date" id="id_end" name="end" />
                 <label for="id_description">Descrição</label>
                 <textarea id="id_description" name="description" cols="50" ></textarea>
@@ -76,7 +76,7 @@
             <% if (sprint !== null) { %>
               <% if (!sprint.invalid) { %>
                 <h2><%- sprint.get('name') %></h2>
-                <span class="due-date">Finalizado em <%- sprint.get('end') %></span>
+                <span class="due-date">Término em <%- sprint.get('end') %></span>
                 <p class="description"><%- sprint.get('description') %></p>
                 <div class="tasks"></div>
               <% } else { %>
@@ -134,6 +134,7 @@
             }
         </script>
         <script src="{% static 'board/js/app.js' %}"></script>
+        <script src="{% static 'board/js/socket.js' %}"></script>
         <script src="{% static 'board/js/models.js' %}"></script>
         <script src="{% static 'board/js/views.js' %}"></script>
         <script src="{% static 'board/js/router.js' %}"></script>

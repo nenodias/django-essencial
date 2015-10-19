@@ -204,5 +204,7 @@ header nav a:hover {
 }
 .tasks .task-item.over{
   opacity: 0.5;
+}
+.tasks .task-item.over, .tasks .status.over{
   border: 1px black dotted;
 }

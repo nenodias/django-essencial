@@ -1,4 +1,6 @@
 # *-* coding:utf-8 *-*
+import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, permissions, viewsets, filters
 from .forms import TaskFilter, SprintFilter
@@ -6,6 +8,42 @@ from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
 
 User = get_user_model()
+
+class UpdateHookMixin(object):
+	'''Clase Mixin para enviar informacoes sobre atualização ao servidor de websocket.'''
+
+	def _build_hook_url(self, obj):
+		'''Definindo o endpoint que será utilizado'''
+		if isinstance(obj, User):
+			model = 'user'
+		else:
+			model = obj.__class__.__name__.lower()
+		return '{}://{}/{}/{}'.format(
+			'https' if settings.WATERCOOLER_SECURE else 'http',
+			settings.WATERCOOLER_SERVER, model, obj.pk
+		)
+	def _send_hook_request(self, obj, method):
+		url = self._build_hook_url(obj)
+		try:
+			response = requests.requests(method, url, timeout=0.5)
+			response.raise_for_status()
+		except requests.exceptions.ConnectionError:
+			# Host não pôde ser resolvido ou a conexão foi recusada
+			pass
+		except requests.exceptions.TimeOut:
+			# Solicitação expirou
+			pass
+		except requests.exceptions.RequestException::
+			# Servidor respondeu com código de status 4XX ou 5XX
+			pass
+
+	def post_save(self, obj, created=False):
+		method = 'POST' if created else 'PUT'
+		self._send_hook_request(obj, method)
+
+	def pre_delete(self, obj):
+		self._send_hook_request(obj, 'DELETE')
+
 
 class DefaultMixin(object):
 	'''Configurações default para autenticação, permissões, filtragem e paginação da view '''
@@ -27,7 +65,7 @@ class DefaultMixin(object):
 		filters.OrderingFilter,
 	)
 
-class SprintViewSet(DefaultMixin, viewsets.ModelViewSet):
+class SprintViewSet(DefaultMixin, UpdateHookMixin, viewsets.ModelViewSet):
 	'''Endpoint da API para listar e criar sprints'''
 	queryset = Sprint.objects.order_by('end')
 	serializer_class = SprintSerializer
@@ -35,7 +73,7 @@ class SprintViewSet(DefaultMixin, viewsets.ModelViewSet):
 	search_fields = ('name',)
 	ordering_fields = ('end', 'name',)
 
-class TaskViewSet(DefaultMixin, viewsets.ModelViewSet):
+class TaskViewSet(DefaultMixin, UpdateHookMixin, viewsets.ModelViewSet):
 	'''Endpoint da API para listar e criar tarefas'''
 	queryset = Task.objects.all()
 	serializer_class = TaskSerializer
@@ -43,7 +81,8 @@ class TaskViewSet(DefaultMixin, viewsets.ModelViewSet):
 	search_fields = ('name', 'description,')
 	ordering_fields = ('name', 'order', 'started', 'due', 'completed',)
 
-class UserViewSet(DefaultMixin, viewsets.ReadOnlyModelViewSet):
+class UserViewSet(DefaultMixin, UpdateHookMixin, viewsets.ReadOnlyModelViewSet):
+	'''Endpoint da API para listar usuários'''
 	lookup_field = User.USERNAME_FIELD
 	lookup_url_kwarg = User.USERNAME_FIELD
 	queryset = User.objects.order_by(User.USERNAME_FIELD)

@@ -25,23 +25,31 @@ class UpdateHookMixin(object):
 	def _send_hook_request(self, obj, method):
 		url = self._build_hook_url(obj)
 		try:
-			response = requests.requests(method, url, timeout=0.5)
+			s = requests.Session()
+			requisicao = requests.Request(method, url)
+			prepared = requisicao.prepare()
+			response = s.send(prepared, timeout=0.5)
 			response.raise_for_status()
 		except requests.exceptions.ConnectionError:
 			# Host não pôde ser resolvido ou a conexão foi recusada
 			pass
-		except requests.exceptions.TimeOut:
+		except requests.exceptions.Timeout:
 			# Solicitação expirou
 			pass
 		except requests.exceptions.RequestException:
 			# Servidor respondeu com código de status 4XX ou 5XX
 			pass
 
-	def post_save(self, obj, created=False):
-		method = 'POST' if created else 'PUT'
+	def perform_create(self, serializer):
+		method = 'POST'
+		obj = serializer.save()
 		self._send_hook_request(obj, method)
 
-	def pre_delete(self, obj):
+	def perform_update(self, serializer):
+		obj = serializer.save()
+		self._send_hook_request(obj, 'PUT')
+
+	def perform_destroy(self, obj):
 		self._send_hook_request(obj, 'DELETE')
 
 

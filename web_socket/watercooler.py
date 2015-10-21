@@ -57,6 +57,7 @@ class UpdateHandler(RequestHandler):
             'id': pk,
             'action': action,
         })
+        logging.info('JSON: %s' %(message) )
         self.application.broadcast(message)
         self.write("Ok")
 

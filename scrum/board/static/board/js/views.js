@@ -156,7 +156,8 @@
       },
       drop: function(event){
         var dataTransfer = event.originalEvent.dataTransfer,
-          task = dataTransfer.getData('application/model');
+          task = dataTransfer.getData('application/model'),
+          tasks, order;
         if (event.stopPropagation) {
           event.stopPropagation();
         }
@@ -175,7 +176,6 @@
 
         this.trigger('drop', task);
         this.leave();
-        return false;
       },
     });
 
@@ -456,13 +456,13 @@
         if (links && links.channel){
           this.socket = new app.Socket(links.channel);
           this.socket.on('task:dragstart', function(task){
-            var view = this.taks[task];
+            var view = this.tasks[task];
             if (view) {
               view.lock();
             }
           }, this);
           this.socket.on('task:dragend task:drop', function(task){
-            var view = this.taks[task];
+            var view = this.tasks[task];
             if (view) {
               view.unlock();
             }

@@ -117,14 +117,14 @@
             updates.status = 1;
           }
           //Tarefas Iniciadas
-          if ( (updates.status ===2) || (update.status > 2 && !this.get('started') ) ){
+          if ( (updates.status ===2) || (updates.status > 2 && !this.get('started') ) ){
             updates.started = today;
-          } else if( update.status < 2 && this.get('started') ){
+          } else if( updates.status < 2 && this.get('started') ){
             updates.started = null;
           }
 
           //Tarefas Concluídas
-          if ( update.status === 4 ) {
+          if ( updates.status === 4 ) {
             updates.completed = today;
           } else if (updates.status < 4 && this.get('completed') ) {
             updates.completed = null;

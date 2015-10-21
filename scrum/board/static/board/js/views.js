@@ -297,15 +297,17 @@
         this.$el.removeClass('over');
       },
       drop: function(event){
-        var dataTransfer = event.originalEvent.dataTransfer,
-          task = dataTransfer.getData('application/model');
+        var self = this,
+          dataTransfer = event.originalEvent.dataTransfer,
+          task = dataTransfer.getData('application/model'),
+          tasks, order;
         if (event.stopPropagation) {
           event.stopPropagation();
         }
-        task = app.tasks.get('task');
-        if (taks !== this.task ){
+        task = app.tasks.get(task);
+        if (task !== this.task ){
           //Tarefa está sendo movida para a frente de this.task
-          order = this.get('order');
+          order = this.task.get('order');
           tasks = app.tasks.filter(function(model){
             return model.get('id') !== task.get('id') &&
             model.get('status') === self.task.get('status') &&

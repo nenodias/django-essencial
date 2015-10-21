@@ -33,7 +33,7 @@ class UpdateHookMixin(object):
 		except requests.exceptions.TimeOut:
 			# Solicitação expirou
 			pass
-		except requests.exceptions.RequestException::
+		except requests.exceptions.RequestException:
 			# Servidor respondeu com código de status 4XX ou 5XX
 			pass
 

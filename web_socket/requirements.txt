@@ -1,1 +1,3 @@
 Tornado==4.2.1
+tornado-redis==2.4.18
+redis==2.10.3

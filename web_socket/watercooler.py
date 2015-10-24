@@ -3,15 +3,21 @@ import json
 import logging
 import signal
 import time
+import uuid
 
 from collections import defaultdict
 from urllib.parse import urlparse
+
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.options import define, parse_command_line, options
 from tornado.web import Application, RequestHandler
 from tornado.websocket import WebSocketHandler, WebSocketClosedError
+
+from redis import Redis
+from tornadoredis import Client
+from tornadoredis.pubsub import BaseSubscriber
 
 define('debug', default=False, type=bool, help='Run in debug mode')
 define('port', default=8088, type=int, help='Server port')
@@ -28,7 +34,8 @@ class SprintHandler(WebSocketHandler):
 
     def open(self, sprint):
         '''Registra-se para receber atualizações de sprint em uma nova camada'''
-        self.sprint = sprint
+        self.sprint = sprint.decode('utf-8')
+        self.uid = uuid.uuid4().hex
         self.application.add_subscriber(self.sprint, self)
 
     def on_message(self, message):
@@ -61,6 +68,28 @@ class UpdateHandler(RequestHandler):
         self.application.broadcast(message)
         self.write("Ok")
 
+
+class RedisSubscriber(BaseSubscriber):
+
+    def on_message(self, msg):
+        '''Trata nova mensagem no canal Redis.'''
+        if msg and msg.king == 'menssage':
+            try:
+                message = json.loads(msg.body)
+                sender = message['sender']
+                message = message['message']
+            except (ValueError, KeyError):
+                message = msg.body
+                sender = None
+            subscribers = list(self.subscribers[msg.channel].keys())
+            for subscriber in subscribers:
+                if sender is None or sender != subscriber.uid:
+                    try:
+                        subscriber.write_message(msg.body)
+                    except WebSocketClosedError:
+                        self.unsubscribe(msg.channel, subscriber)
+        super().on_message(msg)
+
 class ScrumApplication(Application):
     'Minha applicação'
     def __init__(self, **kwargs):
@@ -69,29 +98,23 @@ class ScrumApplication(Application):
             (r'/(?P<model>task|sprint|user)/(?P<pk>[0-9]+)', UpdateHandler),
         ]
         super().__init__(routes, **kwargs)
-        self.subscriptions = defaultdict(list)
+        self.subscriber = RedisSubscriber(Client())
+        self.publisher = Redis()
 
     def add_subscriber(self, channel, subscriber):
-        self.subscriptions[channel].append(subscriber)
+        self.subscriber.subscribe([ 'all', channel ], subscriber)
 
     def remove_subscriber(self, channel, subscriber):
-        self.subscriptions[channel].remove(subscriber)
-
-    def get_subscribers(self, channel):
-        return self.subscriptions[channel]
+        self.subscriber.unsubscribe(channel, subscriber)
+        self.subscriber.unsubscribe('all', subscriber)
 
     def broadcast(self, message, channel=None, sender=None):
-        if channel is None:
-            for c in self.subscriptions.keys():
-                self.broadcast(message, channel=c, sender=sender)
-        else:
-            peers = self.get_subscribers(channel)
-            for peer in peers:
-                if peer != sender:
-                    try:
-                        peer.write_message(message)
-                    except WebSocketClosedError:
-                        self.remove_subscriber(channel, peer)
+        channel = 'all' if channel is None else channel
+        message = json.dumps({
+            'sender': sender and sender.uid,
+            'message': message
+        })
+        self.publisher.publish(channel, message)
 
 def shutdown(server):
     ioloop = IOLoop.instance()

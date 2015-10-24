@@ -42,7 +42,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
 }
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -60,7 +60,7 @@ DATABASES = {
         'PORT':'5432'
     }
 }
-'''
+
 
 LANGUAGE_CODE = 'pt-br'
 
@@ -76,3 +76,4 @@ STATIC_URL = '/static/'
 
 WATERCOOLER_SERVER = os.environ.get('WATERCOOLER_SERVER', 'localhost:8088')
 WATERCOOLER_SECURE = bool(os.environ.get('WATERCOOLER_SECURE', ''))
+WATERCOOLER_SECRET = os.environ.get('WATERCOOLER_SECRET', '3121556214dsa654d6asdas')

@@ -33,7 +33,7 @@ class UpdateHookMixin(object):
             serializer = self.get_serializer(obj)
             rendererer = JSONRenderer()
             context = {'request': self.request}
-            body = renderer.render(serializer.data, renderer_context=context)
+            body = rendererer.render(serializer.data, renderer_context=context)
         else:
             body = None
         headers = {

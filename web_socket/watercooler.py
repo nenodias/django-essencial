@@ -2,6 +2,7 @@
 import hashlib
 import json
 import logging
+import os
 import signal
 import time
 import uuid
@@ -56,8 +57,9 @@ class SprintHandler(WebSocketHandler):
         matched = any(parsed.netloc == host for host in options.allowed_hosts)
         return options.debug or allowed or matched
 
-    def open(self, sprint):
+    def open(self):
         '''Registra-se para receber atualizações de sprint em uma nova camada'''
+        logging.info('Abrindo conexao')
         self.sprint = None
         channel = self.get_argument('channel', None)
         if not channel:
@@ -78,6 +80,7 @@ class SprintHandler(WebSocketHandler):
 
     def on_close(self):
         '''Remove registros'''
+        logging.info('Fechando conexao')
         if self.sprint is not None:
             self.application.remove_subscriber(self.sprint, self)
 
@@ -107,7 +110,7 @@ class UpdateHandler(RequestHandler):
                 url=self.request.full_url(),
                 body=hashlib.sha256(self.request.body).hexdigest(),
             )
-            if not constatnt_time_compare(result, expected):
+            if not constant_time_compare(result, expected):
                 raise HTTPError(400)
         try:
             body = json.loads(self.request.body.decode('utf-8'))

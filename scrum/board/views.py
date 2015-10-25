@@ -3,6 +3,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, permissions, viewsets, filters
+from rest_framework.renderers import JSONRenderer
 from .forms import TaskFilter, SprintFilter
 from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
@@ -22,11 +23,23 @@ class UpdateHookMixin(object):
             'https' if settings.WATERCOOLER_SECURE else 'http',
             settings.WATERCOOLER_SERVER, model, obj.pk
         )
+
     def _send_hook_request(self, obj, method):
         url = self._build_hook_url(obj)
+        if method in ('POST', 'PUT'):
+            #compõe o corpo
+            serializer = self.get_serializer(obj)
+            rendererer = JSONRenderer()
+            context = {'request': self.request}
+            body = renderer.render(serializer.data, renderer_context=context)
+        else:
+            body = None
+        headers = {
+            'content-type': 'application/json',
+        }
         try:
             s = requests.Session()
-            requisicao = requests.Request(method, url)
+            requisicao = requests.Request(method, url, data=body, headers=headers)
             prepared = requisicao.prepare()
             response = s.send(prepared, timeout=0.5)
             response.raise_for_status()

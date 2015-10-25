@@ -18,7 +18,7 @@ class SprintSerializer(serializers.ModelSerializer):
 
     def get_links(self, obj):
         request = self.context['request']
-        signer = TimstampSigner(settings.WATERCOOLER_SECRET)
+        signer = TimestampSigner(settings.WATERCOOLER_SECRET)
         channel = signer.sign(obj.pk)
         return {
             'self':reverse('sprint-detail', kwargs={'pk':obj.pk}, request=request),

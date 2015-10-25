@@ -1,30 +1,51 @@
 # *-* coding:utf-8 *-*
+import hashlib
 import json
 import logging
 import signal
 import time
 import uuid
-import os
 
-from collections import defaultdict
 from urllib.parse import urlparse
 
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
+from django.utils.crypto import constant_time_compare
+
+from redis import Redis
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.options import define, parse_command_line, options
-from tornado.web import Application, RequestHandler
+from tornado.web import Application, RequestHandler, HTTPError
 from tornado.websocket import WebSocketHandler, WebSocketClosedError
 
-from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
-
-from redis import Redis
 from tornadoredis import Client
 from tornadoredis.pubsub import BaseSubscriber
 
 define('debug', default=False, type=bool, help='Run in debug mode')
 define('port', default=8088, type=int, help='Server port')
 define('allowed_hosts', default="localhost:8088", multiple=True, help='Allowed hosts for cross domain connections')
+
+class RedisSubscriber(BaseSubscriber):
+
+    def on_message(self, msg):
+        '''Trata nova mensagem no canal Redis.'''
+        if msg and msg.kind == 'message':
+            try:
+                message = json.loads(msg.body)
+                sender = message['sender']
+                message = message['message']
+            except (ValueError, KeyError):
+                message = msg.body
+                sender = None
+            subscribers = list(self.subscribers[msg.channel].keys())
+            for subscriber in subscribers:
+                if sender is None or sender != subscriber.uid:
+                    try:
+                        subscriber.write_message(msg.body)
+                    except WebSocketClosedError:
+                        self.unsubscribe(msg.channel, subscriber)
+        super().on_message(msg)
 
 class SprintHandler(WebSocketHandler):
     '''Trata atualizações de tempo real no quadro de tarefas'''
@@ -73,6 +94,21 @@ class UpdateHandler(RequestHandler):
         self._broadcast(model, pk, 'remove')
 
     def _broadcast(self, model, pk, action):
+        signature = self.request.headers.get('X-Signature', None)
+        if not signature:
+            raise HTTPError(400)
+        try:
+            result = self.application.signer.unsign(signature, max_age=60 * 1)
+        except (BadSignature, SignatureExpired):
+            raise HTTPError(400)
+        else:
+            expected = '{method}:{url}:{body}'.format(
+                method=self.request.method.lower(),
+                url=self.request.full_url(),
+                body=hashlib.sha256(self.request.body).hexdigest(),
+            )
+            if not constatnt_time_compare(result, expected):
+                raise HTTPError(400)
         try:
             body = json.loads(self.request.body.decode('utf-8'))
         except ValueError:
@@ -86,28 +122,6 @@ class UpdateHandler(RequestHandler):
         logging.info('JSON: %s' %(message) )
         self.application.broadcast(message)
         self.write("Ok")
-
-
-class RedisSubscriber(BaseSubscriber):
-
-    def on_message(self, msg):
-        '''Trata nova mensagem no canal Redis.'''
-        if msg and msg.king == 'menssage':
-            try:
-                message = json.loads(msg.body)
-                sender = message['sender']
-                message = message['message']
-            except (ValueError, KeyError):
-                message = msg.body
-                sender = None
-            subscribers = list(self.subscribers[msg.channel].keys())
-            for subscriber in subscribers:
-                if sender is None or sender != subscriber.uid:
-                    try:
-                        subscriber.write_message(msg.body)
-                    except WebSocketClosedError:
-                        self.unsubscribe(msg.channel, subscriber)
-        super().on_message(msg)
 
 class ScrumApplication(Application):
     'Minha applicação'
@@ -150,7 +164,7 @@ def shutdown(server):
 
 if __name__ == '__main__':
     parse_command_line()
-    application = ScrumApplication()
+    application = ScrumApplication(debug=options.debug)
     server = HTTPServer(application)
     server.listen(options.port)
     signal.signal(signal.SIGINT, lambda sig, frame: shutdown(server) )

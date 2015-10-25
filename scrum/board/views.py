@@ -1,7 +1,9 @@
 # *-* coding:utf-8 *-*
 import requests
+import hashlib
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.signing import TimestampSigner
 from rest_framework import authentication, permissions, viewsets, filters
 from rest_framework.renderers import JSONRenderer
 from .forms import TaskFilter, SprintFilter
@@ -36,6 +38,7 @@ class UpdateHookMixin(object):
             body = None
         headers = {
             'content-type': 'application/json',
+            'X-Signature': self._build_hook_signature(method, url, body)
         }
         try:
             s = requests.Session()
@@ -52,6 +55,15 @@ class UpdateHookMixin(object):
         except requests.exceptions.RequestException:
             # Servidor respondeu com código de status 4XX ou 5XX
             pass
+
+    def _build_hook_signature(self, method, url, body):
+        signer = TimestampSigner(settings.WATERCOOLER_SECRET)
+        value = '{method}:{url}:{body}'.format(
+            method = method.lower(),
+            url=url,
+            body=hashlib.sha256(body or b'').hexdigest()
+        )
+        return signer.sign(value)
 
     def perform_create(self, serializer):
         method = 'POST'
